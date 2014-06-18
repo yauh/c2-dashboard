@@ -1,0 +1,65 @@
+<head>
+  <title>c2-dashboard</title>
+</head>
+
+<body>
+  <div>
+
+  {{> uploadCsv}}
+
+  </div>
+<div>
+    {{> logcard }}
+</div>
+</body>
+
+
+
+<template name="uploadCsv">
+    <h2>Upload logcard CSV</h2>
+    <input type="file" id="files" name="files[]" multiple />
+    <output id="list"></output>
+</template>
+
+<template name="logcard">
+    <h2>Logcard entries</h2>
+    <table border="1">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Time of Day</th>
+            <th>Workout Description</th>
+            <th>Total Time</th>
+            <th>Total Meters</th>
+            <th>Average SPM</th>
+            <th>Average HR</th>
+            <th>Pace /500m</th>
+            <th>Cals/hour</th>
+            <th>Avg Watts</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#each workout}}
+        {{> rowdetails }}
+        {{/each}}
+        </tbody>
+    </table>
+</template>
+
+<template name="rowdetails">
+    <tr>
+        <td>{{name}}</td>
+        <td>{{date}}</td>
+        <td>{{timeofday}}</td>
+        <td>{{desc}}</td>
+        <td>{{totalTime}}</td>
+        <td>{{totalMeters}}</td>
+        <td>{{totalSPM}}</td>
+        <td>{{totalHR}}</td>
+        <td>{{calcPace500}}</td>
+        <td>{{calcCalH}}</td>
+        <td>{{calcWatt}}</td>
+    </tr>
+</template>
+
