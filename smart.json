@@ -2,6 +2,7 @@
   "packages": {
     "less-bootstrap-3": {},
     "font-awesome-4-less": {},
-    "iron-router": {}
+    "iron-router": {},
+    "aggregation": {}
   }
 }

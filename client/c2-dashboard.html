@@ -36,7 +36,7 @@
                     <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="{{pathFor 'home'}}">
-                    <img src="http://placehold.it/150x50&text=Logo" alt="">
+                    <img src="logo_small.png" alt="">
                 </a>
             </div>
 
@@ -67,6 +67,11 @@
 <template name="home">
     <h2>Home of the C2-Dashboard</h2>
     <p>Choose an action.</p>
+    {{> chart }}
+</template>
+
+<template name="chart">
+    <div id="totalTimesChart" style="width:100%; height:400px;">{{totalTimeChart}}</div>
 </template>
 
 <template name="uploadCsv">

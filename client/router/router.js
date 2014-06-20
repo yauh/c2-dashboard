@@ -14,7 +14,7 @@ Router.map( function () {
         template: 'uploadCsv',
     });
     this.route('dashboard', {
-        path: '/dashboard'
+        path: '/'
     });
     this.route('logcard', {
         path: '/logcard',

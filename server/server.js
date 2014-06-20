@@ -1,8 +1,28 @@
-/* server stuff */
-Meteor.publish('C2Workouts', function () {
+/* publications */
+Meteor.publish("C2Workouts", function () {
     return C2Workouts.find();
 });
 
+// group workout types by name, then count
+//Meteor.publish("C2WorkoutTypes", function () {
+//    return C2Workouts.aggregate(
+//        {"$match": {"name": "Stepha"}}, // hardcode my name for now
+//        {"$group": {"_id": "$desc", "sum": {"$sum": 1}}}
+//    )
+//});
+
+// some stats
+console.log('Number of workouts: ' + C2Workouts.find().count());
+//console.log('Number of workout types: ' + C2Workouts.distinct('desc').length);
+// should turn up the same number as the previous
+console.log('Number of workout types: ' + C2Workouts.aggregate(
+    {"$match": {"name": "Stepha"}}, // hardcode my name for now
+    {"$group": {"_id": "$desc", "sum": {"$sum": 1}}}
+).length
+);
+
+
+/* methods */
 Meteor.methods({
     storeC2Workouts: function (data) {
         // for now only csv export from Concept2 Utility - Version 6.55 are supported
@@ -48,7 +68,7 @@ Meteor.methods({
             {
                 console.log('Importing a split');
                 if (sp[16]) {
-                    var type = 'interval rest';
+                    var type = 'rest';
                 }
                 else {
                     var type = 'split';
