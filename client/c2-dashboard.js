@@ -1,6 +1,8 @@
 
 Deps.autorun(function () { // does this have to be in an autorun Dep?
-    Meteor.subscribe( 'Workouts');
+    Meteor.subscribe( "Workouts", function() {
+        console.log( "All workouts have been updated" );
+    });
     myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: -1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
     console.log('found ' + myRowWorkouts.count() + ' workouts');
 });
@@ -28,7 +30,7 @@ Template.uploadCsv.events({
 // create simple chart to show rowing distances by date
 // TODO: Chart will not get rendered if navigating back to dashboard
 Template.personalCharts.helpers({
-    totalTimeChart: function () {
+    myChart: function () {
         // TODO: There must be a more clever way to create data object.
         // TODO: Multiple workouts per day must be aggregated
         var chartDataSeries = [];
@@ -138,3 +140,4 @@ csvToJson = function (csv) {
     var json = $.parse(csv, parseConfig);
     return json;
 }
+
