@@ -1,10 +1,9 @@
-// types is actually the result from a query, not  real collection
+
 Deps.autorun(function () { // does this have to be in an autorun Dep?
-    Meteor.subscribe('C2Workouts');
-    myRowWorkouts = C2Workouts.find({name: 'Stepha'}, {date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
+    Meteor.subscribe( 'Workouts');
+    myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: -1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
     console.log('found ' + myRowWorkouts.count() + ' workouts');
 });
-
 
 // uploading csv logcard data
 // instantly triggers processing when a file is selected
@@ -18,7 +17,7 @@ Template.uploadCsv.events({
                     var all = csvToJson(e.target.result);
                     // storing happens only on server side
                     // TODO: Probably more effective to not parse file in browser but on server instead
-                    Meteor.call('storeC2Workouts', all);
+                    Meteor.call('storeWorkouts', all);
                 }
                 reader.readAsText(file);
             }
@@ -28,7 +27,7 @@ Template.uploadCsv.events({
 
 // create simple chart to show rowing distances by date
 // TODO: Chart will not get rendered if navigating back to dashboard
-Template.chart.helpers({
+Template.personalCharts.helpers({
     totalTimeChart: function () {
         // TODO: There must be a more clever way to create data object.
         // TODO: Multiple workouts per day must be aggregated
@@ -109,18 +108,28 @@ Template.chart.helpers({
             series: chartDataSeries
         });
     }
-
-
 });
 
 
 // populate logcard workouts
 Template.logcard.workout = function () {
-    return C2Workouts.find();
+    return Workouts.find();
 };
 
-/* helpful functions */
+Template.logcard.events({
+    'click .delete': function(evt) {
+        var id = $(evt.currentTarget).attr('data-id');
+        if(confirm("Are you sure?")) {
+            console.log('delete', id);
+            Meteor.call('removeWorkout', id);
+        }
+    },
+    'click #details': function(evt) {
+        console.log('TODO: Create event for modal view');
+    }
+});
 
+/* helpful functions */
 csvToJson = function (csv) {
     var parseConfig = {
         delimiter: ";",

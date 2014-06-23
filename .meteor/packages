@@ -9,4 +9,6 @@ less
 less-bootstrap-3
 font-awesome-4-less
 iron-router
-aggregation
+accounts-password
+accounts-ui-bootstrap-3
+mongodb-aggregation

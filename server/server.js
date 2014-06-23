@@ -1,21 +1,21 @@
 /* publications */
-Meteor.publish("C2Workouts", function () {
-    return C2Workouts.find();
+Meteor.publish("Workouts", function () {
+    console.log('publish ' + Workouts.find().count() + ' workouts in sum');
+    return Workouts.find({owner: this.userId});
 });
 
-// group workout types by name, then count
-//Meteor.publish("C2WorkoutTypes", function () {
-//    return C2Workouts.aggregate(
-//        {"$match": {"name": "Stepha"}}, // hardcode my name for now
-//        {"$group": {"_id": "$desc", "sum": {"$sum": 1}}}
-//    )
-//});
+Meteor.publish("MyWorkouts", function () {
+    console.log('publish ' + Workouts.find({owner: this.userId}).count() + ' workouts for user ' + this.userId);
+    return Workouts.find();
+});
+
+var WorkoutTypes = {'running': ['500m', '1000m', '2000m', '5000m', '10000m', '21097m', '42195m', '00:04:00', '00:30:00', '01:00:00', 'Interval', 'other']};
 
 // some stats
-console.log('Number of workouts: ' + C2Workouts.find().count());
+console.log('Number of workouts: ' + Workouts.find().count());
 //console.log('Number of workout types: ' + C2Workouts.distinct('desc').length);
 // should turn up the same number as the previous
-console.log('Number of workout types: ' + C2Workouts.aggregate(
+console.log('Number of workout types: ' + Workouts.aggregate(
     {"$match": {"name": "Stepha"}}, // hardcode my name for now
     {"$group": {"_id": "$desc", "sum": {"$sum": 1}}}
 ).length
@@ -24,7 +24,8 @@ console.log('Number of workout types: ' + C2Workouts.aggregate(
 
 /* methods */
 Meteor.methods({
-    storeC2Workouts: function (data) {
+    storeWorkouts: function (data) {
+        console.log('this is storeWorkouts in action');
         // for now only csv export from Concept2 Utility - Version 6.55 are supported
         data.results.forEach(function (sp) {
             // skip if
@@ -37,17 +38,22 @@ Meteor.methods({
 
             // Logcard exports are really messy - workouts and splits are mixed in the same table, hence
             // we need some more logic to split workouts, splits, and rest intervals
-            if (sp[5]) // this entry is an actual workout
+            if (sp[5]) // this entry seems to be an actual workout
             {
                 var timestamp = createTimestamp(sp[2], sp[3]);
-                console.log('Importing a workout from ' + timestamp);
-                if (C2Workouts.findOne({name: sp[1], date: sp[2], timeofday: sp[3]})) {
+                console.log('Importing a workout from ' + timestamp + ' for ' + sp[1] + '[' + Meteor.userId() + ']');
+                if (Workouts.findOne({owner: Meteor.userId(), name: sp[1], date: sp[2], timeofday: sp[3]})) {
                     console.log('duplicate workout found - will overwrite');
-                    var workoutId = C2Workouts.findOne({name: sp[1], date: sp[2], timeofday: sp[3]})._id
+                    var workoutId = Workouts.findOne({owner: Meteor.userId(), name: sp[1], date: sp[2], timeofday: sp[3]})._id
                     // in order to maintain integrity of splits we need to delete rather than update the workout
-                    C2Workouts.remove({"_id": workoutId});
+                    Workouts.remove({"_id": workoutId});
                 }
+                //console.log(this.userId + Meteor.userId);
+                var workouttype = 'rowing';
                 var workout = {
+                    owner: Meteor.userId(),
+                    workouttype: workouttype,
+                    added: new Date().getTime(),
                     timestamp: timestamp,
                     name: sp[1],
                     date: sp[2],
@@ -61,7 +67,7 @@ Meteor.methods({
                     calcCalH: sp[14],
                     calcWatt: sp[15],
                 };
-                C2Workouts.insert(workout);
+                Workouts.insert(workout);
             }
 
             else // this entry is a split
@@ -73,7 +79,7 @@ Meteor.methods({
                 else {
                     var type = 'split';
                 }
-                var split = {
+                var workoutSplit = {
                     type: type,
                     splitTime: timeToSeconds(sp[9]),
                     splitMeters: sp[10],
@@ -86,10 +92,15 @@ Meteor.methods({
                     restIntervalMeters: sp[17],
                     restIntervalHR: sp[18],
                 };
-                var workoutId = C2Workouts.findOne({name: sp[1], date: sp[2], timeofday: sp[3]})._id;
-                C2Workouts.update({ _id: workoutId }, {$push: {split: split}});
+                var workoutId = Workouts.findOne({owner: Meteor.userId(), name: sp[1], date: sp[2], timeofday: sp[3]})._id;
+                Workouts.update({ _id: workoutId }, {$push: {'split': workoutSplit}});
             }
         })
+    console.log('done storeWorkouts');
+    },
+    removeWorkout: function (id) {
+         console.log('remove ' + id);
+         Workouts.remove({_id: id}); // TODO: add some validation
     }
 });
 
