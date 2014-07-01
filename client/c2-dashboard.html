@@ -99,26 +99,7 @@
     <div>
         {{> uploadCsv }}
     </div>
-    <!-- Button trigger modal -->
 
-    <!-- Modal -->
-    <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                    <h4 class="modal-title" id="myModalLabel">Delete workout</h4>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete this workout?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" id="deleteWorkout" data-dismiss="modal">Delete</button>
-                    <button type="button" class="btn btn-cancel" data-dismiss="modal">Keep Workout</button>
-                </div>
-            </div>
-        </div>
-    </div>
     <div>
         <table border="1">
             <thead>
@@ -131,18 +112,20 @@
                 <th>Total Meters</th>
                 <th>Average SPM</th>
                 <th>Average HR</th>
+                <th>Average Watts</th>
                 <th>Pace /500m</th>
                 <th>Cals/hour</th>
-                <th>Avg Watts</th>
+                <th>Total Calories</th>
                 <th>Action</th>
             </tr>
             </thead>
             <tbody>
-            {{#each workout}}
+            {{#each workouts}}
             {{> rowdetails }}
             {{/each}}
             </tbody>
         </table>
+        {{>splitModal}}
     </div>
 
 </template>
@@ -153,15 +136,16 @@
         <td>{{date}}</td>
         <td>{{timeofday}}</td>
         <td>{{desc}}</td>
-        <td>{{totalTime}}</td>
+        <td>{{toHms totalTime}}</td>
         <td>{{totalMeters}}</td>
         <td>{{totalSPM}}</td>
         <td>{{totalHR}}</td>
-        <td>{{calcPace500}}</td>
-        <td>{{calcCalH}}</td>
         <td>{{calcWatt}}</td>
+        <td>{{toHms calcPace500}}</td>
+        <td>{{calcCalH}}</td>
+        <td>{{totalCalories}}</td>
         <td>
-            <button class="btn btn-default" id="details" data-id="{{_id}}">Details</button>
+            <button class="btn btn-default" id="details" data-id="{{_id}}" data-toggle="modal" href="#workoutDetails">Details</button>
             <button class="btn btn-danger delete" data-id="{{_id}}">Delete</button>
         </td>
     </tr>
@@ -175,4 +159,92 @@
 
 <template name="personalCharts">
     <div id="totalTimesChart" style="width:100%; height:400px;">{{myChart}}</div>
+</template>
+
+<template name="splitModal">
+    <!-- Modal -->
+    <div class="modal fade" id="workoutDetails" tabindex="-1" role="dialog" aria-labelledby="workoutDetails" aria-hidden="true">
+        <div class="modal-dialog">
+            {{#with workout}}
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title" id="myModalLabel">Workout Details for {{desc}} on {{date}}</h4>
+                    <div id="workoutSummary" class="row">
+                        <div class="col-md-6" id="workoutSummaryLeft">
+                            <table>
+                                <tr>
+                                <td class="heading">Description</td><td class="value">{{desc}}</td>
+                                    </tr>
+                                <tr>
+                                    <td class="heading">Duration</td> <td class="value">{{toHms totalTime}}</td>
+                                    </tr>
+                                <tr>
+                                    <td class="heading">Distance</td> <td class="value">{{totalMeters}}m</td>
+                                </tr>
+                                <tr>
+                                    <td class="heading">Pace</td> <td class="value">{{toHms calcPace500}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="heading">Total calories</td> <td class="value">{{totalCalories}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6" id="workoutSummaryRight">
+                            <table>
+                                <tr>
+                                    <td class="heading">Date</td><td class="value">{{date}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="heading">Time</td> <td class="value">{{timeofday}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="heading">Avg SPM</td> <td class="value">{{totalSPM}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="heading">Avg HR</td> <td class="value">{{totalHR}}</td>
+                                </tr>
+                                <tr>
+                                    <td class="heading">Avg Watt</td> <td class="value">{{calcWatt}}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <table border="1">
+                        <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Meters</th>
+                            <th>Strokes/Minute</th>
+                            <th>Heart Rate</th>
+                            <th>Pace</th>
+                            <th>Cal/h</th>
+                            <th>Watt</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {{#each split}}
+                        <tr>
+                            <td>{{toHms splitTime}}</td>
+                            <td>{{splitMeters}}</td>
+                            <td>{{splitSPM}}</td>
+                            <td>{{splitHR}}</td>
+                            <td>{{toHms calcPace500}}</td>
+                            <td>{{calcCalH}}</td>
+                            <td>{{calcWatt}}</td>
+                        </tr>
+                        {{/each}}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Awesome!</button>
+                </div>
+            </div>
+            {{/with}}
+        </div>
+    </div>
+
 </template>

@@ -1,11 +1,10 @@
 
-Deps.autorun(function () { // does this have to be in an autorun Dep?
-    Meteor.subscribe( "Workouts", function() {
-        console.log( "All workouts have been updated" );
-    });
-    myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: 1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
-    console.log('found ' + myRowWorkouts.count() + ' workouts');
+Meteor.subscribe( "Workouts", function() {
+    console.log( "All workouts have been updated" );
 });
+myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: -1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
+console.log('found ' + myRowWorkouts.count() + ' workouts');
+
 
 // uploading csv logcard data
 // instantly triggers processing when a file is selected
@@ -31,7 +30,7 @@ Template.uploadCsv.events({
 // TODO: Chart will not get rendered if navigating back to dashboard
 Template.personalCharts.helpers({
     myChart: function () {
-        // TODO: There must be a more clever way to create data object.
+            // TODO: There must be a more clever way to create data object.
         // TODO: Multiple workouts per day must be aggregated
         var chartDataSeries = [];
         chartDataSeries[0] = {};
@@ -59,51 +58,54 @@ Template.personalCharts.helpers({
                 text: 'Total rowing times'
             },
             xAxis: {
-                    type: 'datetime',
+                type: 'datetime',
                 dateTimeLabelFormats: { // don't display the dummy year
                     month: '%e. %b',
                     year: '%b'
                 },
             },
-            yAxis: [{ // Primary yAxis
-                labels: {
-                    formatter: function() {
-                        var h = Math.floor(this.value / 3600);
-                        var m = Math.floor(this.value / 60) % 60;
-                        var s = this.value % 60;
-                        if (h < 9) h = "0" + h;
-                        if (m < 9) m = "0" + m;
-                        if (s < 9) s = "0" + s;
-                        return [h, m, s].join(':');
-                    }
+            yAxis: [
+                { // Primary yAxis
+                    labels: {
+                        formatter: function () {
+                            var h = Math.floor(this.value / 3600);
+                            var m = Math.floor(this.value / 60) % 60;
+                            var s = this.value % 60;
+                            if (h < 9) h = "0" + h;
+                            if (m < 9) m = "0" + m;
+                            if (s < 9) s = "0" + s;
+                            return [h, m, s].join(':');
+                        }
+                    },
+                    type: 'datetime',
+                    tooltip: {// TODO: show seconds in hms formats
+                        enabled: true,
+                        formatter: function () {
+                            var h = Math.floor(this.value / 3600);
+                            var m = Math.floor(this.value / 60) % 60;
+                            var s = this.value % 60;
+                            if (h < 9) h = "0" + h;
+                            if (m < 9) m = "0" + m;
+                            if (s < 9) s = "0" + s;
+                            return [h, m, s].join(':');
+                        }
+                    },
+                    title: {
+                        text: 'Duration',
+                        style: {
+                            color: Highcharts.getOptions().colors[1]
+                        }
+                    },
+                    min: 0,
                 },
-                type: 'datetime',
-                tooltip: {// TODO: show seconds in hms formats
-                    enabled: true,
-                    formatter: function() {
-                        var h = Math.floor(this.value / 3600);
-                        var m = Math.floor(this.value / 60) % 60;
-                        var s = this.value % 60;
-                        if (h < 9) h = "0" + h;
-                        if (m < 9) m = "0" + m;
-                        if (s < 9) s = "0" + s;
-                        return [h, m, s].join(':');
-                    }
-                },
-                title: {
-                    text: 'Duration',
-                    style: {
-                        color: Highcharts.getOptions().colors[1]
-                    }
-                },
-                min: 0,
-            }, { // Secondary yAxis
-                title: {
-                    text: 'Distance'
-                },
-                opposite: true,
-                min: 0,
-            }],
+                { // Secondary yAxis
+                    title: {
+                        text: 'Distance'
+                    },
+                    opposite: true,
+                    min: 0,
+                }
+            ],
             plotOptions: {
                 series: {
                     pointStart: new Date().getTime(),
@@ -113,24 +115,38 @@ Template.personalCharts.helpers({
             series: chartDataSeries
         });
     }
+
 });
 
 
 // populate logcard workouts
-Template.logcard.workout = function () {
+Template.logcard.workouts = function () {
     return Workouts.find();
 };
 
+Template.splitModal.workout = function () {
+    console.log("Let's have a look at id " + Session.get("selectedWorkout"))
+    return Workouts.findOne({_id: Session.get("selectedWorkout")});
+};
+
+// let's see how we can do this
+Template.splitModal.splits = function () {
+    return Workouts.find({_id: Session.get("selectedWorkout")});
+};
+
 Template.logcard.events({
-    'click .delete': function(evt) {
+    'click .delete': function (evt) {
         var id = $(evt.currentTarget).attr('data-id');
-        if(confirm("Are you sure?")) {
+        if (confirm("Are you sure?")) {
             console.log('delete', id);
             Meteor.call('removeWorkout', id);
         }
     },
-    'click #details': function(evt) {
-        console.log('TODO: Create event for modal view');
+    'click #details': function (evt) {
+        var id = $(evt.currentTarget).attr('data-id');
+        Session.set("selectedWorkout", id);
+        $('#workoutDetails').modal('show');
+        console.log('TODO: Create event for modal view for id ' + id);
     }
 });
 
@@ -144,3 +160,8 @@ csvToJson = function (csv) {
     return json;
 }
 
+UI.registerHelper('toHms', function (seconds, err) {
+    if (seconds){
+        return moment.duration(seconds*1000).format();
+    }
+});

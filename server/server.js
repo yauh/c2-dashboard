@@ -15,7 +15,7 @@ var WorkoutTypes = {'running': ['500m', '1000m', '2000m', '5000m', '10000m', '21
 console.log('Number of workouts: ' + Workouts.find().count());
 //console.log('Number of workout types: ' + C2Workouts.distinct('desc').length);
 // should turn up the same number as the previous
-console.log('Number of workout types: ' + Workouts.aggregate(
+console.log('Number of workouts types for Stepha: ' + Workouts.aggregate(
     {"$match": {"name": "Stepha"}}, // hardcode my name for now
     {"$group": {"_id": "$desc", "sum": {"$sum": 1}}}
 ).length
@@ -66,6 +66,7 @@ Meteor.methods({
                     calcPace500: timeToSeconds(sp[13]),
                     calcCalH: sp[14],
                     calcWatt: sp[15],
+                    totalCalories: calculateCalories(timeToSeconds(sp[5]),sp[14] )
                 };
                 Workouts.insert(workout);
             }
@@ -104,3 +105,8 @@ Meteor.methods({
     }
 });
 
+/* helpful functions */
+calculateCalories = function (duration, calH) {
+    var calories = Math.round((calH/3600) * duration);
+    return calories;
+}
