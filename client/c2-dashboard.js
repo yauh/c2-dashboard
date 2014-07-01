@@ -129,11 +129,6 @@ Template.splitModal.workout = function () {
     return Workouts.findOne({_id: Session.get("selectedWorkout")});
 };
 
-// let's see how we can do this
-Template.splitModal.splits = function () {
-    return Workouts.find({_id: Session.get("selectedWorkout")});
-};
-
 Template.logcard.events({
     'click .delete': function (evt) {
         var id = $(evt.currentTarget).attr('data-id');
@@ -146,7 +141,7 @@ Template.logcard.events({
         var id = $(evt.currentTarget).attr('data-id');
         Session.set("selectedWorkout", id);
         $('#workoutDetails').modal('show');
-        console.log('TODO: Create event for modal view for id ' + id);
+        renderSplitChart(id);
     }
 });
 
@@ -165,3 +160,8 @@ UI.registerHelper('toHms', function (seconds, err) {
         return moment.duration(seconds*1000).format();
     }
 });
+
+renderSplitChart = function(id) {
+    console.log('This is a split chart for id ' + id);
+    return id;
+}
