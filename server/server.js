@@ -4,6 +4,56 @@ Meteor.publish("Workouts", function () {
     return Workouts.find({owner: this.userId});
 });
 
+Meteor.publish("AggregatedWorkouts", function () {
+    var initialize = true;
+    self = this;
+    var handle = Workouts.find().observeChanges({
+        added: function (id, fields) {
+            if (!initialize){
+                getAggregatedWorkouts();
+                self.changed('workoutsbyday',"date",{result: getAggregatedWorkouts() });
+            }
+        }
+    })
+
+    initialize = false;
+    this.added('workoutsbyday',"date",{result: getAggregatedWorkouts() });
+    this.ready();
+    this.onStop(function(){handle.stop()});
+});
+
+getAggregatedWorkouts = function(){
+    return Workouts.aggregate([
+    {
+        $match: {
+            owner: 'rKQGEYN3EECP4dkrk'
+        }
+    },
+    {
+        $group: {
+            '_id': '$date',
+            'meters': {$sum: '$totalMeters'},
+            'time': {$sum: '$totalTime'}
+        }
+    }
+])
+};
+
+var debug = Workouts.aggregate([
+    {
+        $match: {
+            owner: 'rKQGEYN3EECP4dkrk'
+        }
+    },
+    {
+        $group: {
+            '_id': '$date',
+            'meters': {$sum: '$totalMeters'},
+            'time': {$sum: '$totalTime'}
+        }
+    }
+]);
+console.log(debug);
 
 var WorkoutTypes = {'running': ['500m', '1000m', '2000m', '5000m', '10000m', '21097m', '42195m', '00:04:00', '00:30:00', '01:00:00', 'Interval', 'other']};
 

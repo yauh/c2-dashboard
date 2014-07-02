@@ -1,7 +1,15 @@
+// virtual client collection(tm)
+WorkoutsByDay = new Meteor.Collection('workoutsbyday');
 
 Meteor.subscribe( "Workouts", function() {
     console.log( "All workouts have been updated" );
 });
+
+// connect it to virtual client collection(tm)
+Meteor.subscribe( "AggregatedWorkouts", function() {
+    console.log( "All aggregates have been updated" );
+});
+
 Deps.autorun( function() {
 myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: -1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
 console.log('found ' + myRowWorkouts.count() + ' workouts');
