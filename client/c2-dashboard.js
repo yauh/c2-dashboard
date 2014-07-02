@@ -2,9 +2,11 @@
 Meteor.subscribe( "Workouts", function() {
     console.log( "All workouts have been updated" );
 });
+Deps.autorun( function() {
 myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: -1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
 console.log('found ' + myRowWorkouts.count() + ' workouts');
-
+    }
+)
 
 // uploading csv logcard data
 // instantly triggers processing when a file is selected
@@ -28,9 +30,8 @@ Template.uploadCsv.events({
 
 // create simple chart to show rowing distances by date
 // TODO: Chart will not get rendered if navigating back to dashboard
-Template.personalCharts.helpers({
-    myChart: function () {
-            // TODO: There must be a more clever way to create data object.
+Template.personalCharts.rendered = function () {
+        // TODO: There must be a more clever way to create data object.
         // TODO: Multiple workouts per day must be aggregated
         var chartDataSeries = [];
         chartDataSeries[0] = {};
@@ -115,8 +116,7 @@ Template.personalCharts.helpers({
             series: chartDataSeries
         });
     }
-
-});
+;
 
 
 // populate logcard workouts
@@ -145,23 +145,111 @@ Template.logcard.events({
     }
 });
 
-/* helpful functions */
-csvToJson = function (csv) {
-    var parseConfig = {
-        delimiter: ";",
-        header: false
-    };
-    var json = $.parse(csv, parseConfig);
-    return json;
-}
-
-UI.registerHelper('toHms', function (seconds, err) {
-    if (seconds){
-        return moment.duration(seconds*1000).format();
-    }
-});
 
 renderSplitChart = function(id) {
-    console.log('This is a split chart for id ' + id);
-    return id;
+    var splitData = Workouts.findOne({_id: id});
+    var seriesCategories = [];
+    var seriesData = [];
+    seriesData[0] = [];
+    seriesData[1] = [];
+    var splitCount = 0;
+    console.log('found ' + splitData.split.length + ' splits');
+    splitData.split.forEach(function(split) {
+        splitCount++;
+        seriesCategories.push(splitCount);
+        seriesData[0].push(split.splitMeters);
+        seriesData[1].push(split.calcPace500);
+    });
+    $('#splitChart').highcharts({
+        chart: {
+            zoomType: 'xy'
+        },
+        title: {
+            text: 'Workout splits'
+        },
+        subtitle: {
+            text: 'Look how well you rowed'
+        },
+        xAxis: [{
+            categories: seriesCategories
+        }],
+        yAxis: [{ // Secondary yAxis
+            gridLineWidth: 0,
+            title: {
+                text: 'Distance',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            },
+            labels: {
+                format: '{value}m',
+                style: {
+                    color: Highcharts.getOptions().colors[0]
+                }
+            }
+
+        }, { // Tertiary yAxis
+            gridLineWidth: 0,
+            title: {
+                text: 'Pace',
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            },
+            labels: {
+                formatter: function () {
+                    var m = Math.floor(this.value / 60) % 60;
+                    var s = this.value % 60;
+                    if (m < 9) m = "0" + m;
+                    if (s < 9) s = "0" + s;
+                    return [m, s].join(':');
+                },
+                style: {
+                    color: Highcharts.getOptions().colors[1]
+                }
+            },
+            opposite: true
+        }],
+        tooltip: {
+            shared: true
+        },
+        legend: {
+            layout: 'vertical',
+            align: 'left',
+            x: 120,
+            verticalAlign: 'top',
+            y: 80,
+            floating: true,
+            backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor) || '#FFFFFF'
+        },
+        series: [{
+            name: 'Distance',
+            type: 'column',
+            yAxis: 0,
+            data: seriesData[0],
+            tooltip: {
+                valueSuffix: ' m'
+            }
+
+        }, {
+            name: 'Pace',
+            type: 'spline',
+            yAxis: 1,
+            data: seriesData[1],
+            marker: {
+                enabled: false
+            },
+            dashStyle: 'shortdot',
+            tooltip: { // TODO: Why u no work as on the axis?
+                formatter: function () {
+                    var m = Math.floor(this.value / 60) % 60;
+                    var s = this.value % 60;
+                    if (m < 9) m = "0" + m;
+                    if (s < 9) s = "0" + s;
+                    return [m, s].join(':');
+                }
+            }
+
+        }]
+    });
 }

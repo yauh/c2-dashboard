@@ -12,9 +12,10 @@ This app is a work in progress and still too early to use. Seriously, don't.
 
 ## Todo
 
-- Add accounts to keep data separated (show only my data/limited to specific user)
 - Fix issue with chart not rendering when using navigation
 - Define KPIs
+- figure out how to display rest intervals
+- Group workout data by day
 - Aggregate workout data for summary report
 - trigger KPI generation during logcard import
 - Streamline chart generation

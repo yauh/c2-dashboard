@@ -4,10 +4,6 @@ Meteor.publish("Workouts", function () {
     return Workouts.find({owner: this.userId});
 });
 
-Meteor.publish("MyWorkouts", function () {
-    console.log('publish ' + Workouts.find({owner: this.userId}).count() + ' workouts for user ' + this.userId);
-    return Workouts.find();
-});
 
 var WorkoutTypes = {'running': ['500m', '1000m', '2000m', '5000m', '10000m', '21097m', '42195m', '00:04:00', '00:30:00', '01:00:00', 'Interval', 'other']};
 
@@ -106,7 +102,3 @@ Meteor.methods({
 });
 
 /* helpful functions */
-calculateCalories = function (duration, calH) {
-    var calories = Math.round((calH/3600) * duration);
-    return calories;
-}
