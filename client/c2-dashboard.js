@@ -1,13 +1,10 @@
 // virtual client collection(tm)
 WorkoutsByDay = new Meteor.Collection('workoutsbyday');
 
-Meteor.subscribe( "Workouts", function() {
-    console.log( "All workouts have been updated" );
-});
-
-// connect it to virtual client collection(tm)
-Meteor.subscribe( "AggregatedWorkouts", function() {
-    console.log( "All aggregates have been updated" );
+Router.onBeforeAction(function(pause){
+    console.log('ready?', this.ready());
+    this.subscribe('Workouts').wait();
+    this.subscribe( "AggregatedWorkouts").wait();
 });
 
 Deps.autorun( function() {
@@ -37,7 +34,6 @@ Template.uploadCsv.events({
 });
 
 // create simple chart to show rowing distances by date
-// TODO: Chart will not get rendered if navigating back to dashboard
 Template.personalCharts.rendered = function () {
         // TODO: There must be a more clever way to create data object.
         // TODO: Multiple workouts per day must be aggregated
