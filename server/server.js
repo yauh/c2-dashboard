@@ -39,23 +39,7 @@ getAggregatedWorkouts = function(){
 ])
 };
 
-var debug = Workouts.aggregate([
-    {
-        $match: {
-            owner: 'rKQGEYN3EECP4dkrk'
-        }
-    },
-    {
-        $group: {
-            '_id': '$date',
-            'meters': {$sum: '$totalMeters'},
-            'time': {$sum: '$totalTime'}
-        }
-    }
-]);
-console.log(debug);
-
-var WorkoutTypes = {'running': ['500m', '1000m', '2000m', '5000m', '10000m', '21097m', '42195m', '00:04:00', '00:30:00', '01:00:00', 'Interval', 'other']};
+var WorkoutTypes = {'rowing': ['500m', '1000m', '2000m', '5000m', '10000m', '21097m', '42195m', '00:04:00', '00:30:00', '01:00:00', 'Interval', 'other']};
 
 // some stats
 console.log('Number of workouts: ' + Workouts.find().count());

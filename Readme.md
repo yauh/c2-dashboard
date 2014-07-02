@@ -12,12 +12,10 @@ This app is a work in progress and still too early to use. Seriously, don't.
 
 ## Todo
 
-- Fix issue with chart not rendering when using navigation
 - Define KPIs
 - figure out how to display rest intervals
-- Group workout data by day
 - Aggregate workout data for summary report
-- trigger KPI generation during logcard import
+- trigger KPI generation during logcard import(?)
 - Streamline chart generation
 - Paging for logcard data
 - Integrate workout data from other sources (e.g. RunKeeper)

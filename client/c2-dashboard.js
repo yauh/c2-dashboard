@@ -1,17 +1,19 @@
 // virtual client collection(tm)
 WorkoutsByDay = new Meteor.Collection('workoutsbyday');
+myRowWorkouts = null;
+
 
 Router.onBeforeAction(function(pause){
     console.log('ready?', this.ready());
     this.subscribe('Workouts').wait();
     this.subscribe( "AggregatedWorkouts").wait();
-});
-
-Deps.autorun( function() {
-myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: -1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
-console.log('found ' + myRowWorkouts.count() + ' workouts');
+    if (this.ready()){
+    myRowWorkouts = Workouts.find({name: 'Stepha', workouttype: 'rowing'}, {sort: {timestamp: -1}, date: 1, timeofday: 1, timestamp: 1, desc: 1, totalHR: 1, totalMeters: 1, totalSPM: 1, totalTime: 1});
     }
-)
+    });
+
+
+
 
 // uploading csv logcard data
 // instantly triggers processing when a file is selected
@@ -37,6 +39,7 @@ Template.uploadCsv.events({
 Template.personalCharts.rendered = function () {
         // TODO: There must be a more clever way to create data object.
         // TODO: Multiple workouts per day must be aggregated
+        var myRowWorkouts = this.data.myRowWorkouts;
         var chartDataSeries = [];
         chartDataSeries[0] = {};
         chartDataSeries[0].name = "Time";
@@ -47,12 +50,13 @@ Template.personalCharts.rendered = function () {
         chartDataSeries[1].type = "spline";
         chartDataSeries[1].yAxis = 1;
         chartDataSeries[1].data = [];
-        for (var i = 0; i < myRowWorkouts.count(); i++) {
-            var dataTime = [myRowWorkouts.db_objects[i]['totalTime']];
+        console.log(myRowWorkouts.fetch());
+        myRowWorkouts.forEach(function(doc){
+            var dataTime = [doc['totalTime']];
             chartDataSeries[0].data.push(dataTime);
-            var dataMeters = [myRowWorkouts.db_objects[i]['totalMeters']];
+            var dataMeters = [doc['totalMeters']];
             chartDataSeries[1].data.push(dataMeters);
-        }
+        });
 
         // render a pretty chart
         $('#totalTimesChart').highcharts({
